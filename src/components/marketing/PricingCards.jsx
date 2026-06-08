@@ -62,12 +62,12 @@ export function PricingCards({ showDescriptions = false }) {
 
           <div className="flex flex-col gap-1">
             <div className="flex items-baseline gap-1.5">
-              <span className={`text-xl font-bold ${isPopular ? 'text-white/70' : 'text-text-3'}`}>$</span>
+              <span className={`text-xl font-bold ${isPopular ? 'text-white/70' : 'text-text-3'}`}>৳</span>
               <span className={`text-5xl font-black tracking-tighter ${isPopular ? 'text-white' : 'text-text'}`}>{Number(pkg.monthly_price).toFixed(0)}</span>
               <span className={`text-sm font-bold ${isPopular ? 'text-white/70' : 'text-text-3'}`}>/mo</span>
             </div>
             <div className={`text-xs font-medium ${isPopular ? 'text-white/60' : 'text-text-3'}`}>
-              {pkg.setup_fee > 0 ? `+$${Number(pkg.setup_fee).toFixed(0)} one-time setup fee` : 'No setup fee'}
+              {pkg.setup_fee > 0 ? `+৳${Number(pkg.setup_fee).toFixed(0)} one-time setup fee` : 'No setup fee'}
             </div>
           </div>
 
@@ -89,14 +89,14 @@ export function PricingCards({ showDescriptions = false }) {
           </ul>
 
           <Link 
-            href="/register" 
-            className={`w-full text-center py-4 rounded-xl font-bold text-sm transition-all duration-300 mt-4 ${
+            href={`/checkout/${pkg.package_id}`} 
+            className={`w-full text-center py-4 rounded-xl font-bold text-sm transition-all duration-300 mt-4 shadow-sm ${
               isPopular 
-                ? 'bg-white text-primary hover:bg-slate-50' 
-                : 'bg-primary text-white hover:opacity-90'
+                ? 'bg-white text-primary hover:bg-slate-50 hover:shadow-md' 
+                : 'bg-primary text-white hover:opacity-90 hover:shadow-md'
             }`}
           >
-            Get Started Now
+            Complete Purchase
           </Link>
         </div>
       )})}

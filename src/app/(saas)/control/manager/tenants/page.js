@@ -37,7 +37,7 @@ export default function TenantsPage() {
   if (loading) return <LoadingSpinner />;
   if (error)   return <ErrorMessage message={error} onRetry={refetch} />;
 
-  const tenants = data?.tenants || [];
+  const tenants = data?.data?.tenants || [];
 
   return (
     <div>
@@ -46,7 +46,7 @@ export default function TenantsPage() {
           <h1 className={"text-3xl font-extrabold text-text tracking-tight"}>Tenants</h1>
           <p className={"text-sm text-text-2 mt-1"}>{tenants.length} registered organisations</p>
         </div>
-        <Link href="/control/tenants/create" className="px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary-dark transition disabled:opacity-50 btn-sm">+ New Tenant</Link>
+        <Link href="/control/manager/tenants/create" className="px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary-dark transition disabled:opacity-50 btn-sm">+ New Tenant</Link>
       </div>
 
       <div className={"bg-white/5 border border-border rounded-2xl overflow-hidden"}>
@@ -80,7 +80,7 @@ export default function TenantsPage() {
                       {new Date(t.created_at).toLocaleDateString()}
                     </td>
                     <td>
-                      <Link href={`/control/tenants/${t.tenant_id}`} className="text-primary-light text-xs hover:underline">
+                      <Link href={`/control/manager/tenants/${t.tenant_id}`} className="text-primary-light text-xs hover:underline">
                         Manage →
                       </Link>
                     </td>
