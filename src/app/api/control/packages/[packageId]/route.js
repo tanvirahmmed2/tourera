@@ -8,16 +8,25 @@ export async function PATCH(request, { params }) {
     const auth = await isManager();
     if (!auth.success) return NextResponse.json(auth, { status: 403 });
     const body = await request.json();
+    if (body.monthly_price !== undefined) {
+      body.yearly_price = parseFloat(body.monthly_price) * 12;
+    }
     
     let queryStr = "UPDATE ts_packages SET ";
     const values = [];
     let count = 1;
     
-    const allowedFields = ['name', 'slug', 'description', 'monthly_price', 'yearly_price', 'max_tours', 'max_bookings_per_month', 'max_staff', 'custom_domain', 'analytics', 'is_active', 'image', 'image_id', 'features'];
+    const allowedFields = ['name', 'slug', 'description', 'monthly_price', 'yearly_price', 'setup_fee', 'max_tours', 'max_bookings_per_month', 'max_staff', 'is_active', 'image', 'image_id'];
     for (const key of allowedFields) {
       if (body[key] !== undefined) {
         queryStr += `${key} = $${count}, `;
-        values.push(body[key]);
+        
+        let val = body[key];
+        if (['monthly_price', 'yearly_price', 'setup_fee', 'max_tours', 'max_bookings_per_month', 'max_staff'].includes(key) && val === '') {
+          val = 0;
+        }
+
+        values.push(val);
         count++;
       }
     }
@@ -28,6 +37,16 @@ export async function PATCH(request, { params }) {
     values.push(packageId);
 
     await query(queryStr, values);
+    
+    if (body.features !== undefined && Array.isArray(body.features)) {
+      await query("DELETE FROM ts_package_features WHERE package_id = $1", [packageId]);
+      for (const featureId of body.features) {
+        if (featureId) {
+          await query("INSERT INTO ts_package_features (package_id, feature_id) VALUES ($1, $2)", [packageId, featureId]);
+        }
+      }
+    }
+
     return NextResponse.json({ success: true });
   } catch (err) {
     return NextResponse.json({ success: false, message: err.message }, { status: 500 });

@@ -3,18 +3,38 @@ import { useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function NewPackagePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [availableFeatures, setAvailableFeatures] = useState([]);
+  
   const [formData, setFormData] = useState({
     name: '', description: '', 
-    monthly_price: 0, yearly_price: 0,
+    monthly_price: 0, setup_fee: 0,
     max_tours: 10, max_bookings_per_month: 100, max_staff: 2,
-    custom_domain: false, analytics: false, is_active: true,
-    image: '', image_id: ''
+    is_active: true,
+    image: '', image_id: '', features: []
   });
+
+  useEffect(() => {
+    axios.get('/api/control/features', { withCredentials: true })
+      .then(res => setAvailableFeatures(res.data.data.features))
+      .catch(err => console.error("Failed to load features", err));
+  }, []);
+
+  const handleFeatureToggle = (featureId) => {
+    setFormData(prev => {
+      const isSelected = prev.features.includes(featureId);
+      if (isSelected) {
+        return { ...prev, features: prev.features.filter(id => id !== featureId) };
+      } else {
+        return { ...prev, features: [...prev.features, featureId] };
+      }
+    });
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -86,7 +106,7 @@ export default function NewPackagePage() {
           </div>
           {formData.image && (
             <div className="mt-4 relative inline-block">
-              <img src={formData.image} alt="Preview" className="w-48 h-32 object-cover rounded-xl border border-border shadow-sm" />
+              <Image width={1000} height={1000} src={formData.image} alt="Preview" className="w-48 h-32 object-cover rounded-xl border border-border shadow-sm" />
               <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-black/10"></div>
             </div>
           )}
@@ -98,8 +118,8 @@ export default function NewPackagePage() {
             <input type="number" name="monthly_price" value={formData.monthly_price} onChange={handleChange} className="w-full px-4 py-3 bg-bg border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-text" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-text-2 mb-1.5">Yearly Price ($)</label>
-            <input type="number" name="yearly_price" value={formData.yearly_price} onChange={handleChange} className="w-full px-4 py-3 bg-bg border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-text" />
+            <label className="block text-sm font-medium text-text-2 mb-1.5">One-time Setup Fee ($)</label>
+            <input type="number" name="setup_fee" value={formData.setup_fee} onChange={handleChange} className="w-full px-4 py-3 bg-bg border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-text" />
           </div>
         </div>
 
@@ -118,19 +138,27 @@ export default function NewPackagePage() {
           </div>
         </div>
 
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <label className="block text-sm font-medium text-text-2">Key Features (Included in plan)</label>
+            <Link href="/control/manager/features" className="text-sm font-bold text-primary hover:underline">Manage Features</Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {availableFeatures.map(f => (
+              <label key={f.feature_id} className="flex items-start gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors group">
+                <input 
+                  type="checkbox" 
+                  checked={formData.features.includes(f.feature_id)} 
+                  onChange={() => handleFeatureToggle(f.feature_id)}
+                  className="mt-0.5 w-4 h-4 rounded border-border text-primary focus:ring-primary focus:ring-offset-2 transition-all accent-primary" 
+                />
+                <span className="text-sm font-semibold text-text group-hover:text-text-1 transition-colors leading-tight">{f.name}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
         <div className="flex flex-wrap gap-8 mt-2 bg-slate-50 p-6 rounded-xl border border-slate-100">
-          <label className="flex items-center gap-3 cursor-pointer group">
-            <div className="relative flex items-center">
-              <input type="checkbox" name="custom_domain" checked={formData.custom_domain} onChange={handleChange} className="w-5 h-5 rounded border-border text-primary focus:ring-primary focus:ring-offset-2 transition-all cursor-pointer accent-primary" />
-            </div>
-            <span className="text-sm font-bold text-text-2 group-hover:text-text transition-colors">Custom Domain</span>
-          </label>
-          <label className="flex items-center gap-3 cursor-pointer group">
-            <div className="relative flex items-center">
-              <input type="checkbox" name="analytics" checked={formData.analytics} onChange={handleChange} className="w-5 h-5 rounded border-border text-primary focus:ring-primary focus:ring-offset-2 transition-all cursor-pointer accent-primary" />
-            </div>
-            <span className="text-sm font-bold text-text-2 group-hover:text-text transition-colors">Analytics</span>
-          </label>
           <label className="flex items-center gap-3 cursor-pointer group">
             <div className="relative flex items-center">
               <input type="checkbox" name="is_active" checked={formData.is_active} onChange={handleChange} className="w-5 h-5 rounded border-border text-primary focus:ring-primary focus:ring-offset-2 transition-all cursor-pointer accent-primary" />

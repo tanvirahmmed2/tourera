@@ -5,10 +5,8 @@
 
 CREATE TABLE ts_tenants (
   tenant_id SERIAL PRIMARY KEY,
-
   name TEXT NOT NULL,
   slug TEXT UNIQUE NOT NULL,
-
 
   status TEXT DEFAULT 'active'
     CHECK (status IN ('active','suspended','deleted')),
@@ -20,14 +18,16 @@ CREATE TABLE ts_tenants (
 
 CREATE TABLE tour_websites (
   website_id SERIAL PRIMARY KEY,
-  tenant_id INT NOT NULL REFERENCES ts_tenants(tenant_id) ON DELETE CASCADE,
+  tenant_id INT UNIQUE REFERENCES ts_tenants(tenant_id) ON DELETE CASCADE,
+
   logo_url TEXT,
-  theme_color VARCHAR(50),
+  theme_color TEXT,
+
   hero_title TEXT,
   hero_subtitle TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT unique_tenant_website UNIQUE (tenant_id)
+
+  created_at TIMESTAMP DEFAULT now(),
+  updated_at TIMESTAMP DEFAULT now()
 );
 -- =====================================================
 -- DOMAINS
@@ -35,13 +35,9 @@ CREATE TABLE tour_websites (
 
 CREATE TABLE ts_domains (
   domain_id SERIAL PRIMARY KEY,
-
-  tenant_id INT NOT NULL
-    REFERENCES ts_tenants(tenant_id)
-    ON DELETE CASCADE,
+  tenant_id INT REFERENCES ts_tenants(tenant_id) ON DELETE CASCADE,
 
   domain TEXT UNIQUE NOT NULL,
-
   is_primary BOOLEAN DEFAULT FALSE,
   verified BOOLEAN DEFAULT FALSE,
 
@@ -54,10 +50,8 @@ CREATE TABLE ts_domains (
 
 CREATE TABLE ts_packages (
   package_id SERIAL PRIMARY KEY,
-
   name TEXT NOT NULL,
   slug TEXT UNIQUE NOT NULL,
-
   description TEXT,
 
   monthly_price NUMERIC(10,2),
@@ -67,23 +61,20 @@ CREATE TABLE ts_packages (
   max_bookings_per_month INT,
   max_staff INT,
 
-  custom_domain BOOLEAN DEFAULT FALSE,
-  analytics BOOLEAN DEFAULT FALSE,
-
   is_active BOOLEAN DEFAULT TRUE,
-
   created_at TIMESTAMP DEFAULT now()
 );
 
-CREATE TABLE ts_package_features (
+CREATE TABLE ts_features (
   feature_id SERIAL PRIMARY KEY,
+  key TEXT UNIQUE NOT NULL,  -- e.g. custom_domain
+  name TEXT NOT NULL
+);
 
-  package_id INT
-    REFERENCES ts_packages(package_id)
-    ON DELETE CASCADE,
-
-  name TEXT NOT NULL,
-  value TEXT
+CREATE TABLE ts_package_features (
+  id SERIAL PRIMARY KEY,
+  package_id INT REFERENCES ts_packages(package_id) ON DELETE CASCADE,
+  feature_id INT REFERENCES ts_features(feature_id) ON DELETE CASCADE
 );
 
 -- =====================================================
@@ -93,28 +84,16 @@ CREATE TABLE ts_package_features (
 CREATE TABLE ts_subscriptions (
   subscription_id SERIAL PRIMARY KEY,
 
-  tenant_id INT
-    REFERENCES ts_tenants(tenant_id)
-    ON DELETE CASCADE,
-
-  package_id INT
-    REFERENCES ts_packages(package_id),
+  tenant_id INT REFERENCES ts_tenants(tenant_id) ON DELETE CASCADE,
+  package_id INT REFERENCES ts_packages(package_id),
 
   status TEXT DEFAULT 'active'
-    CHECK (
-      status IN (
-        'trial',
-        'active',
-        'expired',
-        'cancelled'
-      )
-    ),
+    CHECK ('trial','active','expired','cancelled'),
 
   start_date TIMESTAMP DEFAULT now(),
   end_date TIMESTAMP,
 
   auto_renew BOOLEAN DEFAULT TRUE,
-
   created_at TIMESTAMP DEFAULT now()
 );
 

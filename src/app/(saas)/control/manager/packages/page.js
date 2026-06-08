@@ -43,7 +43,7 @@ export default function PackagesPage() {
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} onRetry={refetch} />;
 
-  const packages = data?.packages || [];
+  const packages = data?.data?.packages || [];
 
   return (
     <div>
@@ -52,7 +52,7 @@ export default function PackagesPage() {
           <h1 className="text-3xl font-extrabold text-text tracking-tight">Packages</h1>
           <p className="text-sm text-text-2 mt-1">Manage SaaS subscription plans</p>
         </div>
-        <Link href="/control/manager/packages/new" className="btn btn-primary">
+        <Link href="/control/manager/packages/new" className="px-4 py-2 bg-primary text-white text-sm font-bold rounded-xl hover:opacity-90 transition-all shadow-sm">
           + Add Package
         </Link>
       </div>
@@ -68,39 +68,43 @@ export default function PackagesPage() {
             })();
 
             return (
-              <div key={pkg.package_id} className="bg-white/5 border border-primary/20 rounded-2xl p-7 flex flex-col gap-5 transition-all hover:bg-primary/10 hover:-translate-y-0.5">
+              <div key={pkg.package_id} className="bg-white border border-border rounded-2xl p-7 flex flex-col gap-5 shadow-sm transition-all hover:border-primary/30 hover:shadow-md">
                 <div className="flex justify-between items-start">
                   <h3 className="font-bold text-lg text-text">{pkg.name}</h3>
-                  <span className="badge badge-primary">{pkg.subscriber_count || 0} tenants</span>
+                  <span className="px-2.5 py-1 bg-primary/10 text-primary text-xs font-bold rounded-lg">{pkg.subscriber_count || 0} tenants</span>
                 </div>
                 {pkg.image && (
-                  <img src={pkg.image} alt={pkg.name} className="w-full h-32 object-cover rounded-xl" />
+                  <img src={pkg.image} alt={pkg.name} className="w-full h-32 object-cover rounded-xl border border-border" />
                 )}
-                <p className="text-sm text-text-2 min-h-[40px]">{pkg.description}</p>
-                <div className="flex gap-6">
+                <p className="text-sm text-text-2 min-h-[40px] leading-relaxed">{pkg.description}</p>
+                <div className="grid grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
                   <div>
-                    <div className="text-[0.7rem] text-text-3 uppercase tracking-[0.06em] mb-0.5">Monthly</div>
-                    <div className="text-2xl font-extrabold text-text">${Number(pkg.monthly_price).toFixed(0)}</div>
+                    <div className="text-[0.65rem] font-bold text-text-3 uppercase tracking-wider mb-1">Monthly</div>
+                    <div className="text-lg font-extrabold text-text">${Number(pkg.monthly_price).toFixed(0)}</div>
                   </div>
                   <div>
-                    <div className="text-[0.7rem] text-text-3 uppercase tracking-[0.06em] mb-0.5">Yearly</div>
-                    <div className="text-2xl font-extrabold text-success">${Number(pkg.yearly_price).toFixed(0)}</div>
+                    <div className="text-[0.65rem] font-bold text-text-3 uppercase tracking-wider mb-1">Yearly</div>
+                    <div className="text-lg font-extrabold text-success">${Number(pkg.yearly_price).toFixed(0)}</div>
+                  </div>
+                  <div>
+                    <div className="text-[0.65rem] font-bold text-text-3 uppercase tracking-wider mb-1">Setup Fee</div>
+                    <div className="text-lg font-extrabold text-primary">${Number(pkg.setup_fee || 0).toFixed(0)}</div>
                   </div>
                 </div>
                 {features.length > 0 && (
-                  <ul className="list-none flex flex-col gap-2">
+                  <ul className="list-none flex flex-col gap-2 mt-2">
                     {features.slice(0, 5).map((f, i) => (
-                      <li key={i} className="text-[0.8125rem] text-text-2 flex gap-2 items-start">
-                        <span className="text-success shrink-0 mt-0.5">✓</span> {f}
+                      <li key={i} className="text-sm font-medium text-text-2 flex gap-3 items-start">
+                        <span className="text-primary shrink-0">✓</span> {f.name || f}
                       </li>
                     ))}
                   </ul>
                 )}
-                <div className="flex gap-3 mt-4 pt-4 border-t border-primary/10">
-                  <Link href={`/control/manager/packages/${pkg.package_id}`} className="btn btn-sm btn-ghost flex-1 justify-center">
+                <div className="flex gap-3 mt-auto pt-5 border-t border-slate-100">
+                  <Link href={`/control/manager/packages/${pkg.package_id}`} className="px-4 py-2 bg-white border border-border text-text font-semibold text-sm rounded-xl flex-1 text-center hover:bg-slate-50 transition-colors">
                     Edit
                   </Link>
-                  <button onClick={() => handleDelete(pkg.package_id)} className="btn btn-sm btn-ghost flex-1 justify-center text-error hover:bg-error/10">
+                  <button onClick={() => handleDelete(pkg.package_id)} className="px-4 py-2 bg-white border border-danger/20 text-danger font-semibold text-sm rounded-xl flex-1 text-center hover:bg-danger hover:text-white transition-colors">
                     Delete
                   </button>
                 </div>

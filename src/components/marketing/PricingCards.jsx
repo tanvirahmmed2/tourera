@@ -35,58 +35,71 @@ export function PricingCards({ showDescriptions = false }) {
   const packages = data;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 max-w-6xl mx-auto">
-      {packages.map((pkg) => (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 max-w-6xl mx-auto">
+      {packages.map((pkg, index) => {
+        const isPopular = index === 1; // Automatically highlight the middle tier
+        return (
         <div 
           key={pkg.package_id} 
-          className={`relative border rounded-[2rem] p-10 bg-white transition-all duration-300 flex flex-col gap-6 hover:-translate-y-2 hover:shadow-2xl hover:shadow-slate-200/50 ${
-            pkg.popular 
-              ? 'border-primary/50 bg-[linear-gradient(180deg,rgba(255,255,255,1)_0%,rgba(249,250,251,0.5)_100%)] shadow-[0_8px_30px_rgba(79,70,229,0.12)] ring-4 ring-primary/10' 
-              : 'border-slate-200/80 shadow-sm'
+          className={`relative rounded-3xl p-8 transition-all duration-300 flex flex-col gap-6 ${
+            isPopular 
+              ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-105 z-10 border-0' 
+              : 'bg-white border border-border shadow-sm hover:border-primary/30 hover:shadow-md'
           }`}
         >
-          {pkg.popular && (
-            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-primary text-white text-xs font-extrabold py-1 px-4.5 rounded-full whitespace-nowrap tracking-wider shadow-[0_4px_12px_rgba(99,102,241,0.35)]">
+          {isPopular && (
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-white text-primary text-xs font-black py-1.5 px-5 rounded-full whitespace-nowrap tracking-widest uppercase border border-primary/10 shadow-sm">
               Most Popular
             </div>
           )}
           
           <div>
-            <h3 className="text-2xl font-black text-text mb-2 tracking-tight">{pkg.name}</h3>
+            <h3 className={`text-2xl font-black tracking-tight mb-2 ${isPopular ? 'text-white' : 'text-text'}`}>{pkg.name}</h3>
             {showDescriptions && pkg.description && (
-              <p className="text-text-2 text-xs leading-relaxed mt-1">{pkg.description}</p>
+              <p className={`text-sm leading-relaxed mt-2 min-h-[40px] ${isPopular ? 'text-white/80' : 'text-text-2'}`}>{pkg.description}</p>
             )}
           </div>
 
-          <div className="flex items-baseline gap-1.5 py-1">
-            <span className="text-lg font-bold text-text-3">$</span>
-            <span className="text-5xl font-black tracking-tighter text-text">{pkg.monthly_price}</span>
-            <span className="text-sm font-bold text-text-3">/mo</span>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-baseline gap-1.5">
+              <span className={`text-xl font-bold ${isPopular ? 'text-white/70' : 'text-text-3'}`}>$</span>
+              <span className={`text-5xl font-black tracking-tighter ${isPopular ? 'text-white' : 'text-text'}`}>{Number(pkg.monthly_price).toFixed(0)}</span>
+              <span className={`text-sm font-bold ${isPopular ? 'text-white/70' : 'text-text-3'}`}>/mo</span>
+            </div>
+            <div className={`text-xs font-medium ${isPopular ? 'text-white/60' : 'text-text-3'}`}>
+              {pkg.setup_fee > 0 ? `+$${Number(pkg.setup_fee).toFixed(0)} one-time setup fee` : 'No setup fee'}
+            </div>
           </div>
 
-          <div className="w-full h-px bg-slate-100" />
+          <div className={`w-full h-px ${isPopular ? 'bg-white/20' : 'bg-border'}`} />
 
-          <ul className="list-none flex flex-col gap-3 flex-1 p-0 m-0">
+          <ul className="list-none flex flex-col gap-4 flex-1 p-0 m-0">
             {(pkg.features || []).map((f) => (
-              <li key={f.feature_id || f.name || f} className="text-sm text-text-2 flex items-center gap-2.5">
-                <span className="text-emerald-500 text-sm shrink-0">✓</span> 
-                <span>{f.name || f} {f.value ? `: ${f.value}` : ''}</span>
+              <li key={f.feature_id || f.name || f} className="text-sm font-medium flex items-start gap-3">
+                <span className={`shrink-0 mt-0.5 ${isPopular ? 'text-white' : 'text-primary'}`}>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </span> 
+                <span className={`${isPopular ? 'text-white/90' : 'text-text-2'}`}>
+                  {f.name || f} {f.value ? `: ${f.value}` : ''}
+                </span>
               </li>
             ))}
           </ul>
 
           <Link 
             href="/register" 
-            className={`w-full text-center py-4 rounded-xl font-bold text-sm transition-all duration-300 ${
-              pkg.popular 
-                ? 'btn-custom-primary' 
-                : 'btn-custom-secondary'
+            className={`w-full text-center py-4 rounded-xl font-bold text-sm transition-all duration-300 mt-4 ${
+              isPopular 
+                ? 'bg-white text-primary hover:bg-slate-50' 
+                : 'bg-primary text-white hover:opacity-90'
             }`}
           >
-            Register
+            Get Started Now
           </Link>
         </div>
-      ))}
+      )})}
     </div>
   );
 }
