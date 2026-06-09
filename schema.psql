@@ -197,7 +197,7 @@ CREATE TABLE ts_subscription_payments (
 
 
 -- =====================================================
--- TOUR USERS
+-- SAAS USERS
 -- =====================================================
 
 CREATE TABLE ts_users (
