@@ -11,7 +11,6 @@ export default function EditPackagePage() {
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [availableFeatures, setAvailableFeatures] = useState([]);
   
@@ -51,8 +50,7 @@ export default function EditPackagePage() {
         max_bookings_per_month: pkg.max_bookings_per_month || 100,
         max_staff: pkg.max_staff || 2,
         is_active: pkg.is_active !== false,
-        image: pkg.image || '',
-        image_id: pkg.image_id || '',
+        is_active: pkg.is_active !== false,
         features: Array.isArray(pkg.features) ? pkg.features.map(f => f.feature_id) : []
       });
     } catch (err) {
@@ -72,25 +70,6 @@ export default function EditPackagePage() {
     }));
   };
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const data = new FormData();
-    data.append('file', file);
-
-    setUploading(true);
-    try {
-      const res = await axios.post('/api/control/upload', data);
-      if (res.data.success) {
-        setFormData(prev => ({ ...prev, image: res.data.url, image_id: res.data.public_id }));
-      }
-    } catch (err) {
-      alert('Failed to upload image');
-    } finally {
-      setUploading(false);
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -130,19 +109,6 @@ export default function EditPackagePage() {
           <textarea name="description" value={formData.description} onChange={handleChange} className="w-full px-4 py-3 bg-bg border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-text" rows="3"></textarea>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-text-2 mb-1.5">Package Image (Cloudinary)</label>
-          <div className="flex items-center gap-4">
-            <input type="file" accept="image/*" onChange={handleImageUpload} className="block w-full text-sm text-text-2 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all cursor-pointer border border-border rounded-xl bg-bg" disabled={uploading} />
-            {uploading && <span className="text-sm font-semibold text-primary animate-pulse">Uploading...</span>}
-          </div>
-          {formData.image && (
-            <div className="mt-4 relative inline-block">
-              <img src={formData.image} alt="Preview" className="w-48 h-32 object-cover rounded-xl border border-border shadow-sm" />
-              <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-black/10"></div>
-            </div>
-          )}
-        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -200,7 +166,7 @@ export default function EditPackagePage() {
         </div>
 
         <div className="mt-4 pt-6 border-t border-slate-100">
-          <button type="submit" disabled={saving || uploading} className="w-full py-3.5 px-4 bg-primary text-white font-bold rounded-xl hover:opacity-90 focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          <button type="submit" disabled={saving} className="w-full py-3.5 px-4 bg-primary text-white font-bold rounded-xl hover:opacity-90 focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed">
             {saving ? 'Saving Changes...' : 'Save Changes'}
           </button>
         </div>

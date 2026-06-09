@@ -60,9 +60,32 @@ export async function PATCH(request, { params }) {
   try {
     const auth = await isManager();
     if (!auth.success) return NextResponse.json(auth, { status: 403 });
-    const { status, name } = await request.json();
-    await query("UPDATE ts_tenants SET status = COALESCE($1, status), name = COALESCE($2, name) WHERE tenant_id = $3", [status, name, params.tenantId]);
-    return NextResponse.json({ success: true });
+    const { status, name, website_status, primary_domain } = await request.json();
+    const { tenantId } = await params;
+    
+    // 1. Update Tenant
+    await query("UPDATE ts_tenants SET status = COALESCE($1, status), name = COALESCE($2, name) WHERE tenant_id = $3", [status, name, tenantId]);
+
+    // 2. Update Website Status
+    if (website_status) {
+      await query("UPDATE tour_websites SET status = $1 WHERE tenant_id = $2", [website_status, tenantId]);
+    }
+
+    // 3. Update Primary Domain
+    if (primary_domain !== undefined) {
+      const domainCheck = await query("SELECT domain_id FROM ts_domains WHERE tenant_id = $1 AND is_primary = true", [tenantId]);
+      if (domainCheck.rows.length > 0) {
+        if (primary_domain.trim() === '') {
+          await query("DELETE FROM ts_domains WHERE tenant_id = $1 AND is_primary = true", [tenantId]);
+        } else {
+          await query("UPDATE ts_domains SET domain = $1 WHERE tenant_id = $2 AND is_primary = true", [primary_domain, tenantId]);
+        }
+      } else if (primary_domain.trim() !== '') {
+        await query("INSERT INTO ts_domains (tenant_id, domain, is_primary) VALUES ($1, $2, true)", [tenantId, primary_domain]);
+      }
+    }
+
+    return NextResponse.json({ success: true, message: 'Configuration saved successfully' });
   } catch (err) {
     return NextResponse.json({ success: false, message: err.message }, { status: 500 });
   }

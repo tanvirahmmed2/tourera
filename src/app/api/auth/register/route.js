@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
-import { hashPassword, signToken, buildSessionCookie } from '@/lib/middleware';
+import { hashPassword } from '@/lib/middleware';
+import crypto from 'crypto';
 
 export async function POST(request) {
   try {
@@ -19,25 +20,26 @@ export async function POST(request) {
     }
 
     const hashed = await hashPassword(password);
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    
     const res = await query(
-      "INSERT INTO ts_users (name, email, password, role) VALUES ($1, $2, $3, 'customer') RETURNING *",
-      [name, email.toLowerCase().trim(), hashed]
+      "INSERT INTO ts_users (name, email, password, role, is_verified, verification_token) VALUES ($1, $2, $3, 'customer', false, $4) RETURNING *",
+      [name, email.toLowerCase().trim(), hashed, verificationToken]
     );
 
     const user = res.rows[0];
-    const tokenPayload = {
-      user_id: user.user_id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    };
+    
+    // In a real app, send email here
+    const verifyLink = `${process.env.BASE_URL || 'http://localhost:3000'}/verify?token=${verificationToken}`;
+    console.log('--- Verification Email ---');
+    console.log(`To: ${user.email}`);
+    console.log(`Link: ${verifyLink}`);
+    console.log('--------------------------');
 
-    const token = signToken(tokenPayload);
-    const cookie = buildSessionCookie(token);
-
-    const response = NextResponse.json({ success: true, data: tokenPayload }, { status: 201 });
-    response.headers.set('Set-Cookie', cookie);
-    return response;
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Registration successful. Please check your email to verify your account.' 
+    }, { status: 201 });
   } catch (err) {
     return NextResponse.json({ success: false, message: err.message }, { status: 500 });
   }

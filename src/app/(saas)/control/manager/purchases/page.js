@@ -111,6 +111,9 @@ export default function PurchasesPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="font-bold text-text">{p.requested_tenant_name}</div>
+                      {p.note && (
+                        <div className="text-[10px] text-amber-700 font-bold bg-amber-50 px-2 py-1 rounded mt-1 border border-amber-200 inline-block">{p.note}</div>
+                      )}
                       {p.requested_custom_domain ? (
                         <div className="text-xs text-text-3 font-mono">{p.requested_custom_domain}</div>
                       ) : (

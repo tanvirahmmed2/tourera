@@ -14,7 +14,7 @@ export default function OwnerUsersPage() {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get('/api/control/users');
+      const res = await axios.get('/api/control/users', { withCredentials: true });
       setUsers(res.data.data.users);
     } catch (err) {
       console.error(err);
@@ -26,7 +26,7 @@ export default function OwnerUsersPage() {
   const handleRoleChange = async (userId, newRole) => {
     setUpdating(userId);
     try {
-      await axios.patch(`/api/control/users/${userId}`, { role: newRole });
+      await axios.patch(`/api/control/users/${userId}`, { role: newRole }, { withCredentials: true });
       fetchUsers();
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to change role');
@@ -39,7 +39,7 @@ export default function OwnerUsersPage() {
     if (!confirm('Are you sure you want to permanently delete this user?')) return;
     setUpdating(userId);
     try {
-      await axios.delete(`/api/control/users/${userId}`);
+      await axios.delete(`/api/control/users/${userId}`, { withCredentials: true });
       fetchUsers();
     } catch (err) {
       alert('Failed to delete user');

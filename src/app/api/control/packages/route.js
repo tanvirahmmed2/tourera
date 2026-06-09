@@ -33,19 +33,19 @@ export async function POST(request) {
   try {
     const auth = await isManager();
     if (!auth.success) return NextResponse.json(auth, { status: 403 });
-    const { name, description, monthly_price, setup_fee, max_tours, max_bookings_per_month, max_staff, is_active, image, image_id, features } = await request.json();
+    const { name, description, monthly_price, setup_fee, max_tours, max_bookings_per_month, max_staff, is_active, features } = await request.json();
     if (!name) return NextResponse.json({ success: false, message: 'Name required' }, { status: 400 });
     
     const slug = slugify(name);
     const yearly_price = monthly_price ? parseFloat(monthly_price) * 12 : 0;
     
     const res = await query(
-      "INSERT INTO ts_packages (name, slug, description, monthly_price, yearly_price, setup_fee, max_tours, max_bookings_per_month, max_staff, is_active, image, image_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *",
+      "INSERT INTO ts_packages (name, slug, description, monthly_price, yearly_price, setup_fee, max_tours, max_bookings_per_month, max_staff, is_active) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *",
       [
         name, slug, description, 
         monthly_price || 0, yearly_price, setup_fee || 0, 
         max_tours || 0, max_bookings_per_month || 0, max_staff || 0, 
-        is_active !== false, image, image_id
+        is_active !== false
       ]
     );
 

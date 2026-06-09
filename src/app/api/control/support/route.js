@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
-import { isManager } from '@/lib/middleware';
+import { isSupport } from '@/lib/middleware';
 
 export async function GET(request) {
   try {
-    const auth = await isManager();
+    const auth = await isSupport();
     if (!auth.success) return NextResponse.json(auth, { status: 403 });
     
     const { searchParams } = new URL(request.url);
@@ -20,9 +20,12 @@ export async function GET(request) {
     }
 
     const res = await query(`
-      SELECT t.*, u.name as customer_name, u.email as customer_email 
+      SELECT 
+        t.*, 
+        ten.name as tenant_name,
+        (SELECT COUNT(*) FROM ts_support_replies r WHERE r.ticket_id = t.ticket_id) as reply_count
       FROM ts_support_tickets t 
-      LEFT JOIN ts_users u ON u.user_id = t.user_id 
+      LEFT JOIN ts_tenants ten ON ten.tenant_id = t.tenant_id 
       ORDER BY t.created_at DESC
     `);
     return NextResponse.json({ success: true, data: { tickets: res.rows } });
@@ -33,7 +36,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const auth = await isManager();
+    const auth = await isSupport();
     if (!auth.success) return NextResponse.json(auth, { status: 403 });
     const { ticket_id, message } = await request.json();
     if (!ticket_id || !message) return NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 });
@@ -50,7 +53,7 @@ export async function POST(request) {
 
 export async function PATCH(request) {
   try {
-    const auth = await isManager();
+    const auth = await isSupport();
     if (!auth.success) return NextResponse.json(auth, { status: 403 });
     const { ticket_id, status } = await request.json();
     if (!ticket_id || !status) return NextResponse.json({ success: false, message: 'Invalid payload' }, { status: 400 });

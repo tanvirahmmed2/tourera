@@ -79,6 +79,7 @@ const PANELS = {
         section: 'Overview',
         links: [
           { href: '/dashboard', label: 'Workspaces', icon: '🏢' },
+          { href: '/dashboard/subscriptions', label: 'Subscriptions', icon: '🔄' },
           { href: '/dashboard/billing', label: 'Billing & Invoices', icon: '💳' },
         ],
       },

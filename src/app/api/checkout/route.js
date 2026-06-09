@@ -31,12 +31,14 @@ export async function POST(request) {
     const parsedDuration = parseInt(duration_months) || 1;
     const totalAmount = (Number(pkg.monthly_price) * parsedDuration) + Number(pkg.setup_fee || 0);
 
+    const noteText = requested_custom_domain ? `Preferred domain: ${requested_custom_domain}` : null;
+
     // Create a pending purchase
     await query(
       `INSERT INTO ts_purchases 
-       (user_id, package_id, amount, status, requested_tenant_name, requested_tenant_slug, requested_custom_domain, transaction_id, payment_method, duration_months) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-      [user.user_id, packageId, totalAmount, 'pending', requested_tenant_name, requested_tenant_slug.toLowerCase(), requested_custom_domain, transaction_id, 'bKash', parsedDuration]
+       (user_id, package_id, amount, status, requested_tenant_name, requested_tenant_slug, requested_custom_domain, transaction_id, payment_method, duration_months, note) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [user.user_id, packageId, totalAmount, 'pending', requested_tenant_name, requested_tenant_slug.toLowerCase(), requested_custom_domain, transaction_id, 'bKash', parsedDuration, noteText]
     );
 
     return NextResponse.json({ success: true, message: 'Purchase request submitted' });

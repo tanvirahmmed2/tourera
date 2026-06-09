@@ -34,6 +34,7 @@ export default function TenantsPage() {
   const refetch = fetchData;
 
 
+
   if (loading) return <LoadingSpinner />;
   if (error)   return <ErrorMessage message={error} onRetry={refetch} />;
 
@@ -49,38 +50,43 @@ export default function TenantsPage() {
         <Link href="/control/manager/tenants/create" className="px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary-dark transition disabled:opacity-50 btn-sm">+ New Tenant</Link>
       </div>
 
-      <div className={"bg-white/5 border border-border rounded-2xl overflow-hidden"}>
-        <div className={"flex items-center justify-between p-5 px-6 border-b border-border"}>
-          <span className={"text-base font-bold text-text"}>All Tenants</span>
+      <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm">
+        <div className="flex items-center justify-between p-5 px-6 border-b border-border bg-slate-50">
+          <span className="text-sm font-bold text-text uppercase tracking-wider">All Tenants</span>
         </div>
         {tenants.length === 0 ? (
           <EmptyState icon="🏢" title="No tenants registered yet" />
         ) : (
-          <div className={"overflow-x-auto"}>
-            <table className={"w-full border-collapse table-custom"}>
-              <thead>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-white border-b border-border">
                 <tr>
-                  <th>Organisation</th><th>Subdomain</th><th>Plan</th>
-                  <th>Users</th><th>Status</th><th>Joined</th><th>Actions</th>
+                  <th className="px-6 py-4 font-bold text-text-2">Organisation</th>
+                  <th className="px-6 py-4 font-bold text-text-2">Subdomain</th>
+                  <th className="px-6 py-4 font-bold text-text-2">Plan</th>
+                  <th className="px-6 py-4 font-bold text-text-2">Users</th>
+                  <th className="px-6 py-4 font-bold text-text-2">Status</th>
+                  <th className="px-6 py-4 font-bold text-text-2">Joined</th>
+                  <th className="px-6 py-4 font-bold text-text-2 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-border">
                 {tenants.map((t) => (
-                  <tr key={t.tenant_id}>
-                    <td className="font-semibold">{t.name}</td>
-                    <td>
-                      <code className="text-xs text-primary-light bg-primary/10 px-2 py-0.5 rounded">
+                  <tr key={t.tenant_id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 font-bold text-text">{t.name}</td>
+                    <td className="px-6 py-4">
+                      <code className="text-xs text-primary bg-primary/10 px-2.5 py-1 rounded-md font-bold tracking-tight">
                         {t.slug}
                       </code>
                     </td>
-                    <td className="text-text-2">{t.plan_name || '—'}</td>
-                    <td className="text-text-2">{t.user_count}</td>
-                    <td><StatusBadge status={t.status} /></td>
-                    <td className="text-xs text-text-3">
+                    <td className="px-6 py-4 text-text-2 font-medium">{t.plan_name || '—'}</td>
+                    <td className="px-6 py-4 text-text-2 font-bold">{t.user_count}</td>
+                    <td className="px-6 py-4"><StatusBadge status={t.status} /></td>
+                    <td className="px-6 py-4 text-xs text-text-3 font-medium">
                       {new Date(t.created_at).toLocaleDateString()}
                     </td>
-                    <td>
-                      <Link href={`/control/manager/tenants/${t.tenant_id}`} className="text-primary-light text-xs hover:underline">
+                    <td className="px-6 py-4 text-right">
+                      <Link href={`/control/manager/tenants/${t.tenant_id}`} className="inline-flex items-center justify-center px-4 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg text-xs font-bold transition-colors">
                         Manage →
                       </Link>
                     </td>

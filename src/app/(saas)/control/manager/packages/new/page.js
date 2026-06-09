@@ -1,14 +1,12 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 
 export default function NewPackagePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [availableFeatures, setAvailableFeatures] = useState([]);
   
   const [formData, setFormData] = useState({
@@ -16,7 +14,7 @@ export default function NewPackagePage() {
     monthly_price: 0, setup_fee: 0,
     max_tours: 10, max_bookings_per_month: 100, max_staff: 2,
     is_active: true,
-    image: '', image_id: '', features: []
+    features: []
   });
 
   useEffect(() => {
@@ -44,25 +42,6 @@ export default function NewPackagePage() {
     }));
   };
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const data = new FormData();
-    data.append('file', file);
-
-    setUploading(true);
-    try {
-      const res = await axios.post('/api/control/upload', data);
-      if (res.data.success) {
-        setFormData(prev => ({ ...prev, image: res.data.url, image_id: res.data.public_id }));
-      }
-    } catch (err) {
-      alert('Failed to upload image');
-    } finally {
-      setUploading(false);
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -98,19 +77,6 @@ export default function NewPackagePage() {
           <textarea name="description" value={formData.description} onChange={handleChange} className="w-full px-4 py-3 bg-bg border border-border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-text" rows="3" placeholder="Brief description of the plan..."></textarea>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-text-2 mb-1.5">Package Image (Cloudinary)</label>
-          <div className="flex items-center gap-4">
-            <input type="file" accept="image/*" onChange={handleImageUpload} className="block w-full text-sm text-text-2 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all cursor-pointer border border-border rounded-xl bg-bg" disabled={uploading} />
-            {uploading && <span className="text-sm font-semibold text-primary animate-pulse">Uploading...</span>}
-          </div>
-          {formData.image && (
-            <div className="mt-4 relative inline-block">
-              <Image width={1000} height={1000} src={formData.image} alt="Preview" className="w-48 h-32 object-cover rounded-xl border border-border shadow-sm" />
-              <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-black/10"></div>
-            </div>
-          )}
-        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -168,7 +134,7 @@ export default function NewPackagePage() {
         </div>
 
         <div className="mt-4 pt-6 border-t border-slate-100">
-          <button type="submit" disabled={loading || uploading} className="w-full py-3.5 px-4 bg-primary text-white font-bold rounded-xl hover:opacity-90 focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          <button type="submit" disabled={loading} className="w-full py-3.5 px-4 bg-primary text-white font-bold rounded-xl hover:opacity-90 focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed">
             {loading ? 'Creating Package...' : 'Create Package'}
           </button>
         </div>

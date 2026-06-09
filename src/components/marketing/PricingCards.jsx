@@ -66,14 +66,54 @@ export function PricingCards({ showDescriptions = false }) {
               <span className={`text-5xl font-black tracking-tighter ${isPopular ? 'text-white' : 'text-text'}`}>{Number(pkg.monthly_price).toFixed(0)}</span>
               <span className={`text-sm font-bold ${isPopular ? 'text-white/70' : 'text-text-3'}`}>/mo</span>
             </div>
-            <div className={`text-xs font-medium ${isPopular ? 'text-white/60' : 'text-text-3'}`}>
-              {pkg.setup_fee > 0 ? `+৳${Number(pkg.setup_fee).toFixed(0)} one-time setup fee` : 'No setup fee'}
+            <div className={`text-xs font-medium ${isPopular ? 'text-white/60' : 'text-text-3'} flex flex-col gap-1`}>
+              {pkg.yearly_price ? <span>৳{Number(pkg.yearly_price).toFixed(0)} /year</span> : null}
+              {pkg.setup_fee > 0 ? <span>+৳{Number(pkg.setup_fee).toFixed(0)} one-time setup fee</span> : null}
             </div>
           </div>
 
           <div className={`w-full h-px ${isPopular ? 'bg-white/20' : 'bg-border'}`} />
 
           <ul className="list-none flex flex-col gap-4 flex-1 p-0 m-0">
+            {/* Added Package Details */}
+            {pkg.max_tours != null && (
+              <li className="text-sm font-medium flex items-start gap-3">
+                <span className={`shrink-0 mt-0.5 ${isPopular ? 'text-white' : 'text-primary'}`}>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </span> 
+                <span className={`${isPopular ? 'text-white/90' : 'text-text-2'}`}>
+                  <strong className={isPopular ? 'text-white' : 'text-text'}>{pkg.max_tours === -1 ? 'Unlimited' : pkg.max_tours}</strong> Tours
+                </span>
+              </li>
+            )}
+            {pkg.max_bookings_per_month != null && (
+              <li className="text-sm font-medium flex items-start gap-3">
+                <span className={`shrink-0 mt-0.5 ${isPopular ? 'text-white' : 'text-primary'}`}>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </span> 
+                <span className={`${isPopular ? 'text-white/90' : 'text-text-2'}`}>
+                  <strong className={isPopular ? 'text-white' : 'text-text'}>{pkg.max_bookings_per_month === -1 ? 'Unlimited' : pkg.max_bookings_per_month}</strong> Bookings / month
+                </span>
+              </li>
+            )}
+            {pkg.max_staff != null && (
+              <li className="text-sm font-medium flex items-start gap-3">
+                <span className={`shrink-0 mt-0.5 ${isPopular ? 'text-white' : 'text-primary'}`}>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </span> 
+                <span className={`${isPopular ? 'text-white/90' : 'text-text-2'}`}>
+                  <strong className={isPopular ? 'text-white' : 'text-text'}>{pkg.max_staff === -1 ? 'Unlimited' : pkg.max_staff}</strong> Staff Members
+                </span>
+              </li>
+            )}
+
+            {/* Existing Features */}
             {(pkg.features || []).map((f) => (
               <li key={f.feature_id || f.name || f} className="text-sm font-medium flex items-start gap-3">
                 <span className={`shrink-0 mt-0.5 ${isPopular ? 'text-white' : 'text-primary'}`}>

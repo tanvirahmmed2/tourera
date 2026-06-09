@@ -4,4 +4,3 @@ export const PG_HOST = process.env.PG_HOST;
 export const PG_PORT = parseInt(process.env.PG_PORT || '5432', 10);
 export const PG_DATABASE = process.env.PG_DATABASE;
 export const BASE_URL = 'http://localhost:3000';
-export const BASE_DOMAIN = 'localhost:3000';

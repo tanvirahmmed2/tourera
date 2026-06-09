@@ -15,8 +15,82 @@ export async function POST(request, { params }) {
 
     if (purchase.status === 'paid') return NextResponse.json({ success: false, message: 'Already approved' }, { status: 400 });
 
+    // If it's a renewal (tenant_id is already set), handle differently
+    if (purchase.tenant_id) {
+      await withTransaction(async (client) => {
+        // 1. Fetch active subscription
+        const subRes = await client.query(
+          `SELECT s.subscription_id, s.end_date, s.package_id, p.monthly_price 
+           FROM ts_subscriptions s
+           JOIN ts_packages p ON p.package_id = s.package_id
+           WHERE s.tenant_id = $1 AND s.status = 'active' ORDER BY s.subscription_id DESC LIMIT 1`,
+          [purchase.tenant_id]
+        );
+
+        if (subRes.rows.length === 0) {
+          throw new Error('No active subscription found to renew or upgrade');
+        }
+
+        const subscription = subRes.rows[0];
+
+        // 2. Calculate remaining credit value
+        const remainingDays = Math.max(0, (new Date(subscription.end_date) - new Date()) / (1000 * 60 * 60 * 24));
+        const remainingValue = (Number(subscription.monthly_price) / 30) * remainingDays;
+
+        // 3. Get new package price
+        const newPkgRes = await client.query("SELECT monthly_price FROM ts_packages WHERE package_id = $1", [purchase.package_id]);
+        const newPackagePrice = Number(newPkgRes.rows[0].monthly_price);
+
+        // 4. Calculate total value applied (Amount Paid + Remaining Credit)
+        const totalValueApplied = Number(purchase.amount) + remainingValue;
+
+        // 5. Calculate new duration days based on total value and new package price
+        // (If newPackagePrice is 0, just give them some default, though we shouldn't have free packages like this)
+        const newDays = newPackagePrice > 0 ? (totalValueApplied / newPackagePrice) * 30 : 365;
+
+        // 6. Update subscription with new end_date starting from TODAY and new package_id
+        const updatedSubRes = await client.query(
+          `UPDATE ts_subscriptions 
+           SET end_date = NOW() + INTERVAL '1 day' * $1,
+               package_id = $2
+           WHERE subscription_id = $3 RETURNING *`,
+          [newDays, purchase.package_id, subscription.subscription_id]
+        );
+
+        // 7. Create Subscription Payment Record
+        await client.query(
+          "INSERT INTO ts_subscription_payments (subscription_id, amount, provider, status, transaction_id, paid_at) VALUES ($1, $2, $3, 'success', $4, NOW())",
+          [subscription.subscription_id, purchase.amount, purchase.payment_method || 'manual', purchase.transaction_id]
+        );
+
+        // 8. Mark purchase as paid
+        await client.query(
+          "UPDATE ts_purchases SET status = 'paid' WHERE purchase_id = $1",
+          [purchaseId]
+        );
+
+        // 9. Generate Invoice
+        const invoiceNumber = `INV-${Date.now().toString(36).toUpperCase()}-${Math.floor(Math.random() * 1000)}`;
+        await client.query(
+          "INSERT INTO ts_invoices (tenant_id, subscription_id, invoice_number, amount, status, due_date) VALUES ($1, $2, $3, $4, 'paid', NOW())",
+          [purchase.tenant_id, subscription.subscription_id, invoiceNumber, purchase.amount]
+        );
+      });
+
+      return NextResponse.json({ success: true, message: 'Renewal/Upgrade approved and subscription updated.' });
+    }
+
+    // New workspace approval logic
+    const requestedTenantSlug = purchase.requested_tenant_slug || purchase.metadata?.subdomain;
+    const requestedTenantName = purchase.requested_tenant_name || purchase.metadata?.companyName;
+    const tenantAdminEmail = purchase.metadata?.tenantAdminEmail;
+
+    if (!requestedTenantSlug) {
+      return NextResponse.json({ success: false, message: 'Invalid purchase details (missing subdomain).' }, { status: 400 });
+    }
+
     // Double check if slug is still available
-    const slugCheck = await query("SELECT tenant_id FROM ts_tenants WHERE slug = $1 LIMIT 1", [purchase.requested_tenant_slug]);
+    const slugCheck = await query("SELECT tenant_id FROM ts_tenants WHERE slug = $1 LIMIT 1", [requestedTenantSlug]);
     if (slugCheck.rows.length > 0) {
       return NextResponse.json({ success: false, message: 'Tenant slug is no longer available. Please resolve manually.' }, { status: 400 });
     }
@@ -25,20 +99,26 @@ export async function POST(request, { params }) {
       // 1. Create Tenant
       const tenantRes = await client.query(
         "INSERT INTO ts_tenants (name, slug, status) VALUES ($1, $2, 'active') RETURNING *",
-        [purchase.requested_tenant_name || 'New Tenant', purchase.requested_tenant_slug]
+        [requestedTenantName || 'New Tenant', requestedTenantSlug]
       );
       const newTenant = tenantRes.rows[0];
 
-      // 1.5. Create Domain if provided
-      if (purchase.requested_custom_domain) {
-        await client.query(
-          "INSERT INTO ts_domains (tenant_id, domain, is_primary, verified) VALUES ($1, $2, true, false)",
-          [newTenant.tenant_id, purchase.requested_custom_domain]
-        );
-      }
+      // 1.5. Create Domains
+      // First, create the default .disibin.com domain
+      const defaultDomain = `${requestedTenantSlug}.disibin.com`;
+      await client.query(
+        "INSERT INTO ts_domains (tenant_id, domain, is_primary, verified) VALUES ($1, $2, true, true)",
+        [newTenant.tenant_id, defaultDomain]
+      );
+
+      // We will make the default domain primary.
+      // Custom domains are no longer added automatically, managers will add them manually later.
 
       // 2. Create tour_website
-      await client.query("INSERT INTO tour_websites (tenant_id, hero_title) VALUES ($1, $2)", [newTenant.tenant_id, purchase.requested_tenant_name]);
+      await client.query(
+        "INSERT INTO tour_websites (tenant_id, hero_title, name, email) VALUES ($1, $2, $3, $4)", 
+        [newTenant.tenant_id, requestedTenantName, requestedTenantName, tenantAdminEmail]
+      );
 
       // 3. Create Subscription
       const subRes = await client.query(

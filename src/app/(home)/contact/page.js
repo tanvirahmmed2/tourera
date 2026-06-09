@@ -1,5 +1,5 @@
 'use client';
-import { BASE_DOMAIN } from '@/lib/secret';
+import { BASE_URL } from '@/lib/secret';
 import { useState } from 'react';
 import axios from 'axios';
 
@@ -10,6 +10,7 @@ export default function ContactPage() {
     phone: '',
     message: '',
   });
+
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
@@ -73,7 +74,7 @@ export default function ContactPage() {
                   <span className="text-3xl filter drop-shadow-[0_4px_8px_rgba(99,102,241,0.08)]">📧</span>
                   <div>
                     <div className="font-bold text-xs uppercase tracking-wider text-text-3">Email support</div>
-                    <a href={`mailto:support@${BASE_DOMAIN.split(':')[0]}`} className="text-sm text-primary hover:underline font-bold mt-0.5 inline-block">{`support@${BASE_DOMAIN.split(':')[0]}`}</a>
+                    <a href={`mailto:support@disibin.com`} className="text-sm text-primary hover:underline font-bold mt-0.5 inline-block">support@disibin.com</a>
                   </div>
                 </div>
 

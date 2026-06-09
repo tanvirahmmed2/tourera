@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { LoadingSpinner, ErrorMessage } from '@/components/dashboard/ui';
 
 export default function CheckoutPage({ params }) {
@@ -20,6 +21,7 @@ export default function CheckoutPage({ params }) {
   });
   const [submitting, setSubmitting] = useState(false);
   const [authError, setAuthError] = useState(false);
+  const [existingWorkspaces, setExistingWorkspaces] = useState([]);
 
   useEffect(() => {
     async function loadData() {
@@ -33,6 +35,18 @@ export default function CheckoutPage({ params }) {
           setError("Package not found");
         } else {
           setPkg(found);
+          
+          // Check if user already owns this package
+          try {
+            const workspaceRes = await axios.get('/api/customer/workspaces', { withCredentials: true });
+            if (workspaceRes.data.success) {
+              const userWorkspaces = workspaceRes.data.data.workspaces || [];
+              const matchingWorkspaces = userWorkspaces.filter(w => w.package_id === parseInt(packageId));
+              setExistingWorkspaces(matchingWorkspaces);
+            }
+          } catch (e) {
+            // Ignore if not logged in
+          }
         }
       } catch (err) {
         setError("Failed to load package data");
@@ -106,7 +120,35 @@ export default function CheckoutPage({ params }) {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+            {existingWorkspaces.length > 0 ? (
+              <div className="p-6 bg-blue-50 border border-blue-200 rounded-2xl">
+                <h3 className="text-lg font-bold text-blue-900 mb-2">You already own this package!</h3>
+                <p className="text-sm text-blue-800 mb-6 leading-relaxed">
+                  You have {existingWorkspaces.length} active workspace(s) using the <strong>{pkg.name}</strong> plan. Would you like to renew an existing workspace instead of creating a new one?
+                </p>
+                <div className="flex flex-col gap-3">
+                  {existingWorkspaces.map(w => (
+                    <div key={w.tenant_id} className="flex items-center justify-between bg-white p-4 rounded-xl border border-blue-100 shadow-sm">
+                      <div>
+                        <div className="font-bold text-slate-800">{w.tenant_name}</div>
+                        <div className="text-xs text-slate-500 mt-1 font-mono">{w.primary_domain || `${w.slug}.disibin.com`}</div>
+                      </div>
+                      <Link href={`/dashboard/workspaces/${w.tenant_id}`} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-colors">
+                        Renew Workspace
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="mt-8 pt-6 border-t border-blue-200/60 text-center">
+                  <p className="text-xs text-blue-700 mb-3">Or do you want to create another separate workspace on this plan?</p>
+                  <button onClick={() => setExistingWorkspaces([])} className="text-sm text-blue-600 font-bold hover:underline">
+                    Continue to Purchase New Workspace
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="flex flex-col gap-6">
               <div>
                 <label className="block text-sm font-bold text-text-2 mb-2">Company Name</label>
                 <input 
@@ -180,6 +222,7 @@ export default function CheckoutPage({ params }) {
                 {submitting ? 'Submitting...' : 'Confirm & Request Activation'}
               </button>
             </form>
+            )}
           </div>
 
           {/* Order Summary */}

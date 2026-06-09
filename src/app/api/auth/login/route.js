@@ -22,17 +22,16 @@ export async function POST(request) {
       return NextResponse.json({ success: false, message: 'Invalid credentials' }, { status: 401 });
     }
 
+    if (user.is_verified === false) {
+      return NextResponse.json({ success: false, message: 'Please verify your email address before logging in' }, { status: 403 });
+    }
+
     const tokenPayload = {
       user_id: user.user_id,
       name: user.name,
       email: user.email,
       role: user.role,
     };
-
-    if (user.tenant_id) {
-      tokenPayload.tenant_id = user.tenant_id;
-      tokenPayload.tenant_slug = user.tenant_slug;
-    }
 
     const token = signToken(tokenPayload);
     const cookie = buildSessionCookie(token);

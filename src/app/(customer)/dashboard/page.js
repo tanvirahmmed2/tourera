@@ -1,41 +1,46 @@
-import { BASE_DOMAIN, BASE_URL } from '@/lib/secret';
-import { isLogin } from '@/lib/middleware';
-import { redirect } from 'next/navigation';
-import { query } from '@/lib/db';
+'use client';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import Link from 'next/link';
+import { LoadingSpinner, ErrorMessage } from '@/components/dashboard/ui';
 
-export default async function CustomerDashboardPage() {
-  const auth = await isLogin();
-  if (!auth.success) redirect('/login');
-  const session = auth.data;
-  
-  // We link the ts_users (SaaS customer) to their ts_tenants via their purchases.
-  const workspacesRes = await query(`
-    SELECT t.tenant_id, t.name AS tenant_name, t.slug, t.status, t.created_at,
-           pk.name AS plan_name, pk.max_tours, pk.max_bookings_per_month,
-           s.status AS subscription_status
-    FROM ts_tenants t
-    JOIN ts_purchases p ON p.tenant_id = t.tenant_id
-    LEFT JOIN ts_subscriptions s ON s.tenant_id = t.tenant_id AND s.status = 'active'
-    LEFT JOIN ts_packages pk ON pk.package_id = s.package_id
-    WHERE p.user_id = $1
-    ORDER BY t.created_at DESC
-  `, [session.user_id]);
+export default function CustomerDashboardPage() {
+  const [workspaces, setWorkspaces] = useState([]);
+  const [baseUrl, setBaseUrl] = useState('http://localhost:3000');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const workspaces = workspacesRes.rows;
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get('/api/customer/workspaces', { withCredentials: true });
+      if (res.data.success) {
+        setWorkspaces(res.data.data.workspaces || []);
+        setBaseUrl(res.data.data.baseUrl || 'http://localhost:3000');
+      } else {
+        throw new Error(res.data.message || 'Failed to load workspaces');
+      }
+    } catch (err) {
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        window.location.href = '/login';
+        return;
+      }
+      setError(err.response?.data?.message || err.message || 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const pendingPurchasesRes = await query(`
-    SELECT p.purchase_id, p.status, p.created_at, p.amount,
-           pk.name as plan_name,
-           p.metadata->>'companyName' as requested_name,
-           p.metadata->>'subdomain' as requested_slug
-    FROM ts_purchases p
-    JOIN ts_packages pk ON pk.package_id = p.package_id
-    WHERE p.user_id = $1 AND p.status = 'pending'
-    ORDER BY p.created_at DESC
-  `, [session.user_id]);
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-  const pendingPurchases = pendingPurchasesRes.rows;
+  if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage message={error} onRetry={fetchData} />;
+
+  const getWorkspaceUrl = (workspace) => {
+    return `http://${workspace.primary_domain}/dashboard`;
+  };
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
@@ -64,7 +69,7 @@ export default async function CustomerDashboardPage() {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h3 className="text-lg font-bold text-text">{workspace.tenant_name}</h3>
-                  <p className="text-text-3 text-sm mt-0.5">{workspace.slug}.{BASE_DOMAIN}</p>
+                  <p className="text-text-3 text-sm mt-0.5">{workspace.primary_domain}</p>
                 </div>
                 <div className="bg-green-50 text-green-700 border border-green-200 text-xs font-bold px-2 py-1 rounded-md uppercase tracking-wider">
                   {workspace.status}
@@ -88,54 +93,24 @@ export default async function CustomerDashboardPage() {
                 )}
               </div>
 
-              <div className="flex items-center gap-3 mt-auto">
+              <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-100">
+                <Link 
+                  href={`/dashboard/workspaces/${workspace.tenant_id}`}
+                  className="flex-1 px-4 py-2 bg-white border border-border text-text font-semibold text-sm rounded-xl text-center hover:bg-slate-50 transition-colors"
+                >
+                  Manage Settings
+                </Link>
                 <a 
-                  href={`http://${workspace.slug}.${BASE_DOMAIN}/dashboard`}
+                  href={getWorkspaceUrl(workspace)}
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="flex-1 btn-custom-primary text-center justify-center"
                 >
-                  Login to Workspace
+                  Login to App
                 </a>
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {pendingPurchases.length > 0 && (
-        <div className="mt-12">
-          <h2 className="text-xl font-extrabold text-text mb-4">Pending Workspaces</h2>
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider">
-                <tr>
-                  <th className="px-6 py-4 font-semibold">Workspace Info</th>
-                  <th className="px-6 py-4 font-semibold">Package</th>
-                  <th className="px-6 py-4 font-semibold">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {pendingPurchases.map(p => (
-                  <tr key={p.purchase_id} className="hover:bg-slate-50">
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-slate-800">{p.requested_name}</div>
-                      <div className="text-slate-500 text-xs">{p.requested_slug}.{BASE_DOMAIN}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-slate-700">{p.plan_name}</div>
-                      <div className="text-slate-500 text-xs">${p.amount}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-700">
-                        {p.status} (Waiting for Approval)
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         </div>
       )}
     </div>

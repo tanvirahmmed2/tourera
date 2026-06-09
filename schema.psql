@@ -26,6 +26,13 @@ CREATE TABLE tour_websites (
   hero_title TEXT,
   hero_subtitle TEXT,
 
+  name TEXT,
+  address TEXT,
+  tagline TEXT,
+  sociallink TEXT,
+  email TEXT,
+  phone TEXT,
+
   created_at TIMESTAMP DEFAULT now(),
   updated_at TIMESTAMP DEFAULT now()
 );
@@ -123,6 +130,8 @@ CREATE TABLE ts_purchases (
       )
     ),
 
+  note TEXT,
+  
   created_at TIMESTAMP DEFAULT now()
 );
 
@@ -194,18 +203,21 @@ CREATE TABLE ts_subscription_payments (
 CREATE TABLE ts_users (
   user_id SERIAL PRIMARY KEY,
 
- 
   name TEXT NOT NULL,
   email TEXT NOT NULL,
   password TEXT NOT NULL,
+  phone TEXT,
 
-  role TEXT DEFAULT 'staff'
+  is_verified BOOLEAN DEFAULT FALSE,
+  verification_token TEXT,
+  reset_password_token TEXT,
+  reset_password_expires TIMESTAMP,
+
+  role TEXT DEFAULT 'customer'
     CHECK (
       role IN (
         'owner',
         'manager',
-        'staff',
-        'guide',
         'support',
         'customer'
       )
@@ -278,3 +290,16 @@ CREATE TABLE ts_support_replies (
   created_at TIMESTAMP DEFAULT now()
 );
 
+-- =====================================================
+-- CONTACT MESSAGES
+-- =====================================================
+
+CREATE TABLE ts_contact (
+  contact_id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT,
+  message TEXT NOT NULL,
+  status TEXT DEFAULT 'open' CHECK (status IN ('open', 'resolved')),
+  created_at TIMESTAMP DEFAULT now()
+);

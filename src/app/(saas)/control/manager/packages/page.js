@@ -73,9 +73,6 @@ export default function PackagesPage() {
                   <h3 className="font-bold text-lg text-text">{pkg.name}</h3>
                   <span className="px-2.5 py-1 bg-primary/10 text-primary text-xs font-bold rounded-lg">{pkg.subscriber_count || 0} tenants</span>
                 </div>
-                {pkg.image && (
-                  <img src={pkg.image} alt={pkg.name} className="w-full h-32 object-cover rounded-xl border border-border" />
-                )}
                 <p className="text-sm text-text-2 min-h-[40px] leading-relaxed">{pkg.description}</p>
                 <div className="grid grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
                   <div>

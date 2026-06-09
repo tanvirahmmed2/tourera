@@ -14,14 +14,20 @@ export default function TenantDetailPage({ params }) {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [editStatus, setEditStatus] = useState('');
+  
+  const [editWebsiteStatus, setEditWebsiteStatus] = useState('');
+  const [editDomain, setEditDomain] = useState('');
 
   useEffect(() => {
-    axios.get(`/api/control/tenants/${tenantId}`)
+    axios.get(`/api/control/tenants/${tenantId}`, { withCredentials: true })
       .then((res) => {
         const d = res.data;
         if (d.data?.tenant) { 
           setData(d.data.tenant); 
           setEditStatus(d.data.tenant.status); 
+          setEditWebsiteStatus(d.data.tenant.website?.status || 'development');
+          const pDomain = d.data.tenant.domains?.find(dom => dom.is_primary) || d.data.tenant.domains?.[0] || null;
+          setEditDomain(pDomain?.domain || '');
         }
         else setError(d.message || 'Tenant not found');
       })
@@ -40,6 +46,31 @@ export default function TenantDetailPage({ params }) {
       setError(err.response?.data?.message || 'Update failed');
     } finally {
       setSaving(false);
+    }
+  }
+
+  const [savingConfig, setSavingConfig] = useState(false);
+  async function saveConfig() {
+    setSavingConfig(true);
+    setError('');
+    try {
+      await axios.patch(`/api/control/tenants/${tenantId}`, { 
+        website_status: editWebsiteStatus, 
+        primary_domain: editDomain 
+      });
+      // Update local state without full reload
+      setData((d) => ({
+        ...d,
+        website: { ...d.website, status: editWebsiteStatus },
+        domains: d.domains.map(dom => dom.is_primary ? { ...dom, domain: editDomain } : dom).concat(
+          !d.domains.some(dom => dom.is_primary) && editDomain ? [{ domain: editDomain, is_primary: true }] : []
+        )
+      }));
+      alert('Configuration saved successfully');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to save configuration');
+    } finally {
+      setSavingConfig(false);
     }
   }
 
@@ -65,7 +96,7 @@ export default function TenantDetailPage({ params }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Core Stats */}
-        <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
+        <div className="bg-white border border-border rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
           <div className="text-sm font-bold text-text-3 uppercase tracking-wider mb-4">Workspace Summary</div>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
@@ -84,7 +115,7 @@ export default function TenantDetailPage({ params }) {
         </div>
 
         {/* Subscription Info */}
-        <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
+        <div className="bg-white border border-border rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
           <div className="text-sm font-bold text-text-3 uppercase tracking-wider mb-4">Active Subscription</div>
           {activeSub ? (
             <div className="space-y-4">
@@ -107,20 +138,41 @@ export default function TenantDetailPage({ params }) {
         </div>
 
         {/* Website & Domain Config */}
-        <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
+        <div className="bg-white border border-border rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all flex flex-col">
           <div className="text-sm font-bold text-text-3 uppercase tracking-wider mb-4">Website Config</div>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-text-2 text-sm font-medium">Primary Domain</span>
-              <span className="text-text font-bold text-sm">{primaryDomain?.domain || 'Not configured'}</span>
+          <div className="space-y-4 flex-1">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-text-2 text-xs font-bold uppercase tracking-wider">Website Status</label>
+              <select 
+                value={editWebsiteStatus}
+                onChange={(e) => setEditWebsiteStatus(e.target.value)}
+                className="w-full bg-slate-50 border border-border rounded-lg px-3 py-2 text-sm font-bold text-text focus:outline-none focus:border-primary/50"
+              >
+                <option value="development">Development</option>
+                <option value="active">Active</option>
+                <option value="suspended">Suspended</option>
+              </select>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-text-2 text-sm font-medium">Domain Verified</span>
-              <span className="text-text font-bold text-sm">{primaryDomain?.verified ? '✅ Yes' : '❌ No'}</span>
+            
+            <div className="flex flex-col gap-1.5">
+              <label className="text-text-2 text-xs font-bold uppercase tracking-wider">Primary Domain</label>
+              <input 
+                type="text"
+                value={editDomain}
+                onChange={(e) => setEditDomain(e.target.value)}
+                placeholder="e.g. www.example.com"
+                className="w-full bg-slate-50 border border-border rounded-lg px-3 py-2 text-sm font-medium text-text focus:outline-none focus:border-primary/50"
+              />
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-text-2 text-sm font-medium">Hero Title</span>
-              <span className="text-text font-bold text-sm truncate max-w-[150px]">{tenant.website?.hero_title || 'Default'}</span>
+            
+            <div className="pt-2">
+              <button 
+                onClick={saveConfig}
+                disabled={savingConfig}
+                className="w-full py-2 bg-primary/10 text-primary-light font-bold text-sm rounded-lg hover:bg-primary hover:text-white transition-colors disabled:opacity-50"
+              >
+                {savingConfig ? 'Saving...' : 'Save Configuration'}
+              </button>
             </div>
           </div>
         </div>
@@ -128,7 +180,7 @@ export default function TenantDetailPage({ params }) {
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
         {/* User Roster */}
-        <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm flex flex-col">
+        <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm flex flex-col hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between p-5 border-b border-border bg-slate-50">
             <span className="text-sm font-bold text-text uppercase tracking-wider">Workspace Users</span>
           </div>
@@ -159,7 +211,7 @@ export default function TenantDetailPage({ params }) {
         </div>
 
         {/* Invoices */}
-        <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm flex flex-col">
+        <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm flex flex-col hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between p-5 border-b border-border bg-slate-50">
             <span className="text-sm font-bold text-text uppercase tracking-wider">Billing & Invoices</span>
           </div>
@@ -201,11 +253,14 @@ export default function TenantDetailPage({ params }) {
       </div>
 
       {/* Change Status */}
-      <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm">
-        <div className="flex items-center justify-between p-5 px-6 border-b border-border bg-slate-50">
-          <span className="text-sm font-bold text-text uppercase tracking-wider">Danger Zone: Workspace Status</span>
+      <div className="bg-white border border-red-200 rounded-2xl overflow-hidden shadow-sm">
+        <div className="flex items-center justify-between p-5 px-6 border-b border-red-100 bg-red-50/50">
+          <span className="text-sm font-bold text-red-600 uppercase tracking-wider flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            Danger Zone: Workspace Status
+          </span>
         </div>
-        <div className="p-6 flex items-center gap-4 bg-red-50/20">
+        <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white">
           <select
             className="bg-white border border-border rounded-xl px-4 py-2.5 text-sm font-bold text-text focus:outline-none focus:border-primary/50 w-[200px]"
             value={editStatus}
@@ -216,7 +271,7 @@ export default function TenantDetailPage({ params }) {
             <option value="deleted">Deleted</option>
           </select>
           <button 
-            className="px-5 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-sm hover:opacity-90 transition disabled:opacity-50" 
+            className="px-6 py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 hover:shadow-lg hover:shadow-red-500/20 transition-all disabled:opacity-50 disabled:hover:shadow-none" 
             onClick={updateStatus} 
             disabled={saving || editStatus === tenant.status}
           >

@@ -12,7 +12,7 @@ export default function PricingSection() {
           </h2>
           <p className="text-base text-text-2 max-w-[560px] leading-relaxed">Choose a package that fits your needs.</p>
         </div>
-        <PricingCards />
+        <PricingCards showDescriptions={true} />
         <p className="text-center text-text-3 text-sm mt-8">
           <Link href="/pricing" className="text-primary hover:text-primary-dark transition-colors font-semibold">Compare full features →</Link>
         </p>

@@ -29,11 +29,8 @@ export default function LoginPage() {
       if (data.success) {
         toast.success('Logged in successfully!');
         const role = data.data?.role;
-        const tenantId = data.data?.tenant_id;
 
-        if (tenantId) {
-          router.push('/');
-        } else if (role === 'owner') {
+        if (role === 'owner') {
           router.push('/control/owner');
         } else if (role === 'manager') {
           router.push('/control/manager');

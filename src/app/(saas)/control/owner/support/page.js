@@ -28,7 +28,7 @@ export default function ControlSupportPage() {
     setLoading(true);
     const url = `/api/control/support${filterStatus ? `?status=${filterStatus}` : ''}`;
     try {
-      const res = await axios.get(url);
+      const res = await axios.get(url, { withCredentials: true });
       setTickets(res.data.data.tickets || []);
     } catch {
       // ignore
@@ -41,7 +41,7 @@ export default function ControlSupportPage() {
   const openTicket = async (id) => {
     setSelected(id);
     try {
-      const res = await axios.get(`/api/control/support?ticketId=${id}`);
+      const res = await axios.get(`/api/control/support?ticketId=${id}`, { withCredentials: true });
       setThread(res.data);
     } catch {
       // ignore

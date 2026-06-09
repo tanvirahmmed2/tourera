@@ -15,7 +15,7 @@ export default function ManagerReviewsPage() {
 
   const fetchReviews = async () => {
     try {
-      const res = await axios.get('/api/control/reviews');
+      const res = await axios.get('/api/control/reviews', { withCredentials: true });
       setReviews(res.data.data.reviews);
     } catch (err) {
       console.error(err);
@@ -26,7 +26,7 @@ export default function ManagerReviewsPage() {
 
   const toggleApproval = async (id, currentStatus) => {
     try {
-      await axios.patch(`/api/control/reviews/${id}`, { is_approved: !currentStatus });
+      await axios.patch(`/api/control/reviews/${id}`, { is_approved: !currentStatus }, { withCredentials: true });
       fetchReviews();
     } catch (err) {
       alert('Failed to update approval status');
@@ -36,7 +36,7 @@ export default function ManagerReviewsPage() {
   const deleteReview = async (id) => {
     if (!confirm('Delete this review forever?')) return;
     try {
-      await axios.delete(`/api/control/reviews/${id}`);
+      await axios.delete(`/api/control/reviews/${id}`, { withCredentials: true });
       fetchReviews();
     } catch (err) {
       alert('Failed to delete review');
@@ -45,7 +45,7 @@ export default function ManagerReviewsPage() {
 
   const submitReply = async (id) => {
     try {
-      await axios.patch(`/api/control/reviews/${id}`, { reply: replyText });
+      await axios.patch(`/api/control/reviews/${id}`, { reply: replyText }, { withCredentials: true });
       setReplyingTo(null);
       setReplyText('');
       fetchReviews();

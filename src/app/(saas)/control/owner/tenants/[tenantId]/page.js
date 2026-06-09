@@ -16,7 +16,7 @@ export default function TenantDetailPage() {
   const [editStatus, setEditStatus] = useState('');
 
   useEffect(() => {
-    axios.get(`/api/control/tenants/${tenantId}`)
+    axios.get(`/api/control/tenants/${tenantId}`, { withCredentials: true })
       .then((res) => {
         const d = res.data;
         if (d.tenant) { setData(d); setEditStatus(d.tenant.status); }
@@ -73,11 +73,11 @@ export default function TenantDetailPage() {
       </div>
 
       {/* Tenant Details */}
-      <div className="bg-white/5 border border-border rounded-2xl overflow-hidden mb-6">
-        <div className={"flex items-center justify-between p-5 px-6 border-b border-border"}>
+      <div className="bg-white border border-border rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all mb-6">
+        <div className={"flex items-center justify-between pb-5 border-b border-border mb-5"}>
           <span className={"text-base font-bold text-text"}>Tenant Information</span>
         </div>
-        <div className="p-6 grid grid-cols-2 gap-5">
+        <div className="grid grid-cols-2 gap-5">
           {[
             { label: 'Tenant ID',           value: tenant.tenant_id },
             { label: 'Slug',                value: tenant.slug },
@@ -98,13 +98,13 @@ export default function TenantDetailPage() {
       </div>
 
       {/* Change Status */}
-      <div className={"bg-white/5 border border-border rounded-2xl overflow-hidden"}>
-        <div className={"flex items-center justify-between p-5 px-6 border-b border-border"}>
+      <div className="bg-white border border-border rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
+        <div className={"flex items-center justify-between pb-5 border-b border-border mb-5"}>
           <span className={"text-base font-bold text-text"}>Change Status</span>
         </div>
-        <div className="p-6 flex items-center gap-4">
+        <div className="flex items-center gap-4">
           <select
-            className="bg-white/5 border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:outline-none focus:border-primary/50 max-w-[200px]"
+            className="bg-white border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:outline-none focus:border-primary/50 max-w-[200px]"
             value={editStatus}
             onChange={(e) => setEditStatus(e.target.value)}
           >
@@ -112,7 +112,11 @@ export default function TenantDetailPage() {
             <option value="inactive">Inactive</option>
             <option value="suspended">Suspended</option>
           </select>
-          <button className="px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary-dark transition disabled:opacity-50" onClick={updateStatus} disabled={saving}>
+          <button 
+            className="px-6 py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 hover:shadow-lg hover:shadow-red-500/20 transition-all disabled:opacity-50 disabled:hover:shadow-none" 
+            onClick={updateStatus} 
+            disabled={saving || editStatus === tenant.status}
+          >
             {saving ? 'Saving…' : 'Update Status'}
           </button>
           {error && <span className="text-danger text-sm">{error}</span>}
