@@ -9,7 +9,7 @@ CREATE TABLE ts_tenants (
   slug TEXT UNIQUE NOT NULL,
 
   status TEXT DEFAULT 'active'
-    CHECK (status IN ('active','suspended','deleted')),
+    CHECK (status IN ('active','development','suspended','deleted')),
 
   created_at TIMESTAMP DEFAULT now(),
   updated_at TIMESTAMP DEFAULT now()
