@@ -18,7 +18,7 @@ export default function TenantsPage() {
     setError(null);
     try {
       const res = await axios.get(fetchUrl, { withCredentials: true });
-      setData(res.data);
+      setData(res.data.data || res.data);
     } catch (err) {
       if (err.response && err.response.status === 401) {
         window.location.href = '/login';
@@ -38,7 +38,7 @@ export default function TenantsPage() {
   if (loading) return <LoadingSpinner />;
   if (error)   return <ErrorMessage message={error} onRetry={refetch} />;
 
-  const tenants = data?.data?.tenants || [];
+  const tenants = data?.tenants || [];
 
   return (
     <div>
@@ -50,8 +50,8 @@ export default function TenantsPage() {
         <Link href="/control/manager/tenants/create" className="px-5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary-dark transition disabled:opacity-50 btn-sm">+ New Tenant</Link>
       </div>
 
-      <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm">
-        <div className="flex items-center justify-between p-5 px-6 border-b border-border bg-slate-50">
+      <div className="bg-white/5 border border-border rounded-2xl overflow-hidden">
+        <div className="flex items-center justify-between p-5 px-6 border-b border-border bg-transparent">
           <span className="text-sm font-bold text-text uppercase tracking-wider">All Tenants</span>
         </div>
         {tenants.length === 0 ? (
@@ -59,7 +59,7 @@ export default function TenantsPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-white border-b border-border">
+              <thead className="bg-white/5 border-b border-border">
                 <tr>
                   <th className="px-6 py-4 font-bold text-text-2">Organisation</th>
                   <th className="px-6 py-4 font-bold text-text-2">Subdomain</th>
@@ -72,7 +72,7 @@ export default function TenantsPage() {
               </thead>
               <tbody className="divide-y divide-border">
                 {tenants.map((t) => (
-                  <tr key={t.tenant_id} className="hover:bg-slate-50 transition-colors">
+                  <tr key={t.tenant_id} className="hover:bg-white/5 transition-colors">
                     <td className="px-6 py-4 font-bold text-text">{t.name}</td>
                     <td className="px-6 py-4">
                       <code className="text-xs text-primary bg-primary/10 px-2.5 py-1 rounded-md font-bold tracking-tight">

@@ -73,7 +73,7 @@ export default function TenantDetailPage() {
       </div>
 
       {/* Tenant Details */}
-      <div className="bg-white border border-border rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all mb-6">
+      <div className="bg-white/5 border border-primary/20 rounded-2xl p-6 transition-all hover:bg-primary/10 hover:-translate-y-0.5 mb-6">
         <div className={"flex items-center justify-between pb-5 border-b border-border mb-5"}>
           <span className={"text-base font-bold text-text"}>Tenant Information</span>
         </div>
@@ -98,13 +98,13 @@ export default function TenantDetailPage() {
       </div>
 
       {/* Change Status */}
-      <div className="bg-white border border-border rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
+      <div className="bg-transparent border border-red-900/50 rounded-2xl p-6 transition-all">
         <div className={"flex items-center justify-between pb-5 border-b border-border mb-5"}>
           <span className={"text-base font-bold text-text"}>Change Status</span>
         </div>
         <div className="flex items-center gap-4">
           <select
-            className="bg-white border border-border rounded-xl px-4 py-2.5 text-sm text-text focus:outline-none focus:border-primary/50 max-w-[200px]"
+            className="bg-transparent border border-border rounded-xl px-4 py-2.5 text-sm font-bold text-text focus:outline-none focus:border-primary/50 max-w-[200px]"
             value={editStatus}
             onChange={(e) => setEditStatus(e.target.value)}
           >

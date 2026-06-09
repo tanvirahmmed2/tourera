@@ -16,7 +16,7 @@ export default function PackagesPage() {
     setError(null);
     try {
       const res = await axios.get(fetchUrl, { withCredentials: true });
-      setData(res.data);
+      setData(res.data.data || res.data);
     } catch (err) {
       if (err.response && err.response.status === 401) {
         window.location.href = '/login';
@@ -77,7 +77,7 @@ export default function PackagesPage() {
                   <ul className="list-none flex flex-col gap-2">
                     {features.slice(0, 5).map((f, i) => (
                       <li key={i} className="text-[0.8125rem] text-text-2 flex gap-2 items-start">
-                        <span className="text-success shrink-0 mt-0.5">✓</span> {f}
+                        <span className="text-success shrink-0 mt-0.5">✓</span> {f.name || f}
                       </li>
                     ))}
                   </ul>

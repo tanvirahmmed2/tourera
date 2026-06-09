@@ -15,7 +15,7 @@ export default function PackagesPage() {
     setError(null);
     try {
       const res = await axios.get(fetchUrl, { withCredentials: true });
-      setData(res.data);
+      setData(res.data.data || res.data);
     } catch (err) {
       if (err.response && err.response.status === 401) {
         window.location.href = '/login';
@@ -43,7 +43,7 @@ export default function PackagesPage() {
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} onRetry={refetch} />;
 
-  const packages = data?.data?.packages || [];
+  const packages = data?.packages || [];
 
   return (
     <div>
@@ -68,13 +68,13 @@ export default function PackagesPage() {
             })();
 
             return (
-              <div key={pkg.package_id} className="bg-white border border-border rounded-2xl p-7 flex flex-col gap-5 shadow-sm transition-all hover:border-primary/30 hover:shadow-md">
+              <div key={pkg.package_id} className="bg-white/5 border border-primary/20 rounded-2xl p-7 flex flex-col gap-5 transition-all hover:bg-primary/10 hover:-translate-y-0.5">
                 <div className="flex justify-between items-start">
                   <h3 className="font-bold text-lg text-text">{pkg.name}</h3>
                   <span className="px-2.5 py-1 bg-primary/10 text-primary text-xs font-bold rounded-lg">{pkg.subscriber_count || 0} tenants</span>
                 </div>
                 <p className="text-sm text-text-2 min-h-[40px] leading-relaxed">{pkg.description}</p>
-                <div className="grid grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <div className="grid grid-cols-3 gap-4 bg-white/5 p-4 rounded-xl border border-border">
                   <div>
                     <div className="text-[0.65rem] font-bold text-text-3 uppercase tracking-wider mb-1">Monthly</div>
                     <div className="text-lg font-extrabold text-text">${Number(pkg.monthly_price).toFixed(0)}</div>
@@ -97,11 +97,11 @@ export default function PackagesPage() {
                     ))}
                   </ul>
                 )}
-                <div className="flex gap-3 mt-auto pt-5 border-t border-slate-100">
-                  <Link href={`/control/manager/packages/${pkg.package_id}`} className="px-4 py-2 bg-white border border-border text-text font-semibold text-sm rounded-xl flex-1 text-center hover:bg-slate-50 transition-colors">
+                <div className="flex gap-3 mt-auto pt-5 border-t border-border">
+                  <Link href={`/control/manager/packages/${pkg.package_id}`} className="px-4 py-2 bg-white/5 border border-border text-text font-semibold text-sm rounded-xl flex-1 text-center hover:bg-white/10 transition-colors">
                     Edit
                   </Link>
-                  <button onClick={() => handleDelete(pkg.package_id)} className="px-4 py-2 bg-white border border-danger/20 text-danger font-semibold text-sm rounded-xl flex-1 text-center hover:bg-danger hover:text-white transition-colors">
+                  <button onClick={() => handleDelete(pkg.package_id)} className="px-4 py-2 bg-transparent border border-danger/20 text-danger font-semibold text-sm rounded-xl flex-1 text-center hover:bg-danger hover:text-white transition-colors">
                     Delete
                   </button>
                 </div>

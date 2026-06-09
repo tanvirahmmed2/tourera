@@ -90,13 +90,13 @@ export default function EditPackagePage() {
   return (
     <div className="max-w-3xl mx-auto">
       <div className="flex items-center gap-4 mb-8">
-        <Link href="/control/manager/packages" className="px-4 py-2 text-sm font-bold text-text-2 bg-white border border-border rounded-xl hover:bg-slate-50 transition-colors">
+        <Link href="/control/manager/packages" className="px-4 py-2 text-sm font-bold text-text-2 bg-white/5 border border-border rounded-xl hover:bg-white/10 transition-colors">
           ← Back
         </Link>
         <h1 className="text-2xl font-extrabold text-text">Edit Package</h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white border border-border rounded-2xl p-8 flex flex-col gap-6 shadow-sm">
+      <form onSubmit={handleSubmit} className="bg-white/5 border border-border rounded-2xl p-8 flex flex-col gap-6">
         <div className="grid grid-cols-1 gap-6">
           <div>
             <label className="block text-sm font-medium text-text-2 mb-1.5">Name</label>
@@ -143,7 +143,7 @@ export default function EditPackagePage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {availableFeatures.map(f => (
-              <label key={f.feature_id} className="flex items-start gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors group">
+              <label key={f.feature_id} className="flex items-start gap-3 p-3 bg-white/5 border border-border rounded-xl cursor-pointer hover:bg-white/10 transition-colors group">
                 <input 
                   type="checkbox" 
                   checked={formData.features.includes(f.feature_id)} 
@@ -156,7 +156,7 @@ export default function EditPackagePage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-8 mt-2 bg-slate-50 p-6 rounded-xl border border-slate-100">
+        <div className="flex flex-wrap gap-8 mt-2 bg-white/5 p-6 rounded-xl border border-border">
           <label className="flex items-center gap-3 cursor-pointer group">
             <div className="relative flex items-center">
               <input type="checkbox" name="is_active" checked={formData.is_active} onChange={handleChange} className="w-5 h-5 rounded border-border text-primary focus:ring-primary focus:ring-offset-2 transition-all cursor-pointer accent-primary" />
@@ -165,7 +165,7 @@ export default function EditPackagePage() {
           </label>
         </div>
 
-        <div className="mt-4 pt-6 border-t border-slate-100">
+        <div className="mt-4 pt-6 border-t border-border">
           <button type="submit" disabled={saving} className="w-full py-3.5 px-4 bg-primary text-white font-bold rounded-xl hover:opacity-90 focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed">
             {saving ? 'Saving Changes...' : 'Save Changes'}
           </button>

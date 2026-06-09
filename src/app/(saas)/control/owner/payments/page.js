@@ -16,7 +16,7 @@ export default function ControlPaymentsPage() {
     setError(null);
     try {
       const res = await axios.get(fetchUrl, { withCredentials: true });
-      setData(res.data);
+      setData(res.data.data || res.data);
     } catch (err) {
       if (err.response && err.response.status === 401) {
         window.location.href = '/login';

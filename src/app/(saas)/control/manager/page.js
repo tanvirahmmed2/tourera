@@ -17,7 +17,7 @@ export default function ControlDashboard() {
     setError(null);
     try {
       const res = await axios.get(fetchUrl, { withCredentials: true });
-      setData(res.data);
+      setData(res.data.data || res.data);
     } catch (err) {
       if (err.response && err.response.status === 401) {
         window.location.href = '/login';
@@ -65,7 +65,7 @@ export default function ControlDashboard() {
         {STAT_CARDS.map((s) => (
           <div 
             key={s.label} 
-            className="relative border border-slate-100 rounded-2xl p-6 bg-white shadow-sm shadow-slate-100/50 transition-all duration-300 hover:border-slate-200 hover:-translate-y-0.5"
+            className="relative bg-white/5 border border-primary/20 rounded-2xl p-6 transition-all duration-300 hover:bg-primary/10 hover:-translate-y-0.5"
           >
             <div className="flex justify-between items-center gap-4 mb-4">
               <div className="text-[10px] font-bold uppercase tracking-wider text-text-3">{s.label}</div>
@@ -79,8 +79,8 @@ export default function ControlDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Recent Tenants */}
-        <div className="bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-sm shadow-slate-100/50">
-          <div className="flex items-center justify-between p-5 px-6 border-b border-slate-100">
+        <div className="bg-white/5 border border-border rounded-3xl overflow-hidden">
+          <div className="flex items-center justify-between p-5 px-6 border-b border-border">
             <span className="text-base font-bold text-text tracking-tight">Recent Tenants</span>
             <Link href="/control/tenants" className="text-xs text-primary hover:underline font-bold">View all →</Link>
           </div>
@@ -114,8 +114,8 @@ export default function ControlDashboard() {
         </div>
 
         {/* Recent Payments */}
-        <div className="bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-sm shadow-slate-100/50">
-          <div className="flex items-center justify-between p-5 px-6 border-b border-slate-100">
+        <div className="bg-white/5 border border-border rounded-3xl overflow-hidden">
+          <div className="flex items-center justify-between p-5 px-6 border-b border-border">
             <span className="text-base font-bold text-text tracking-tight">Recent Payments</span>
             <Link href="/control/payments" className="text-xs text-primary hover:underline font-bold">View all →</Link>
           </div>

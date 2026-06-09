@@ -15,7 +15,7 @@ export default function ControlAnalyticsPage() {
     setError(null);
     try {
       const res = await axios.get(fetchUrl, { withCredentials: true });
-      setData(res.data);
+      setData(res.data.data || res.data);
     } catch (err) {
       if (err.response && err.response.status === 401) {
         window.location.href = '/login';
@@ -60,7 +60,7 @@ export default function ControlAnalyticsPage() {
         {METRICS.map((m) => (
           <div 
             key={m.label} 
-            className="relative border border-slate-100 rounded-2xl p-6 bg-white shadow-sm shadow-slate-100/50 transition-all duration-300 hover:border-slate-200 hover:-translate-y-0.5"
+            className="relative bg-white/5 border border-primary/20 rounded-2xl p-6 transition-all duration-300 hover:bg-primary/10 hover:-translate-y-0.5"
           >
             <div className="flex justify-between items-center gap-4 mb-4">
               <div className="text-[10px] font-bold uppercase tracking-wider text-text-3">{m.label}</div>
@@ -73,8 +73,8 @@ export default function ControlAnalyticsPage() {
       </div>
 
       {/* Tenant Growth */}
-      <div className="bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-sm shadow-slate-100/50">
-        <div className="p-5 px-6 border-b border-slate-100">
+      <div className="bg-white/5 border border-border rounded-3xl overflow-hidden">
+        <div className="p-5 px-6 border-b border-border">
           <span className="text-base font-bold text-text tracking-tight">Tenant Growth (last 6 months)</span>
         </div>
         {tenantGrowth.length === 0 ? (
@@ -97,9 +97,9 @@ export default function ControlAnalyticsPage() {
                       <td className="font-bold text-text text-sm">
                         {new Date(row.month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                       </td>
-                      <td className="font-black text-slate-800 text-sm">{row.count}</td>
+                      <td className="font-black text-text text-sm">{row.count}</td>
                       <td>
-                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden w-full max-w-md">
+                        <div className="h-2 bg-white/10 rounded-full overflow-hidden w-full max-w-md">
                           <div
                             className="h-full rounded-full transition-all duration-500"
                             style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #6366f1, #8b5cf6)' }}

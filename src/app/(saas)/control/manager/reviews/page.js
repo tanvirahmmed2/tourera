@@ -62,7 +62,7 @@ export default function ManagerReviewsPage() {
 
       <div className="grid gap-4">
         {reviews.map(r => (
-          <div key={r.review_id} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-6">
+          <div key={r.review_id} className="bg-white/5 rounded-2xl border border-border p-6 flex flex-col md:flex-row gap-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <div className="font-bold text-lg">{r.reviewer_name}</div>
@@ -73,12 +73,12 @@ export default function ManagerReviewsPage() {
                   <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-xs font-bold uppercase tracking-wider">Pending</span>
                 )}
               </div>
-              <p className="text-slate-600 mb-4">{r.comment}</p>
+              <p className="text-text-2 mb-4">{r.comment}</p>
               
               {r.reply && (
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mt-2">
-                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Your Reply:</div>
-                  <p className="text-sm text-slate-700">{r.reply}</p>
+                <div className="bg-white/5 border border-border rounded-xl p-4 mt-2">
+                  <div className="text-xs font-bold text-text-3 uppercase tracking-wider mb-1">Your Reply:</div>
+                  <p className="text-sm text-text-2">{r.reply}</p>
                 </div>
               )}
 
@@ -87,18 +87,18 @@ export default function ManagerReviewsPage() {
                   <textarea 
                     value={replyText} 
                     onChange={e => setReplyText(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary min-h-[100px]"
+                    className="w-full bg-white/5 border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary min-h-[100px]"
                     placeholder="Write a public reply..."
                   />
                   <div className="flex gap-2">
                     <button onClick={() => submitReply(r.review_id)} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90">Save Reply</button>
-                    <button onClick={() => setReplyingTo(null)} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-200">Cancel</button>
+                    <button onClick={() => setReplyingTo(null)} className="px-4 py-2 bg-white/10 text-text rounded-lg text-sm font-semibold hover:bg-white/20">Cancel</button>
                   </div>
                 </div>
               )}
             </div>
             
-            <div className="flex flex-row md:flex-col gap-2 shrink-0 border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6 justify-center">
+            <div className="flex flex-row md:flex-col gap-2 shrink-0 border-t md:border-t-0 md:border-l border-border pt-4 md:pt-0 md:pl-6 justify-center">
               <button 
                 onClick={() => toggleApproval(r.review_id, r.is_approved)}
                 className={`px-4 py-2 rounded-lg text-sm font-semibold ${r.is_approved ? 'bg-amber-50 text-amber-600 hover:bg-amber-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
@@ -124,7 +124,7 @@ export default function ManagerReviewsPage() {
         ))}
 
         {reviews.length === 0 && (
-          <div className="text-center py-12 text-slate-500 bg-white rounded-2xl border border-slate-200">
+          <div className="text-center py-12 text-text-2 bg-white/5 rounded-2xl border border-border">
             No reviews submitted yet.
           </div>
         )}

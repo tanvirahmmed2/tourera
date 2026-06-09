@@ -20,7 +20,7 @@ export async function GET(request, { params }) {
       query("SELECT * FROM ts_tenants WHERE tenant_id = $1", [tenantId]),
       query("SELECT * FROM tour_websites WHERE tenant_id = $1", [tenantId]),
       query("SELECT * FROM ts_domains WHERE tenant_id = $1", [tenantId]),
-      query("SELECT user_id, name, email, role, created_at FROM ts_users WHERE tenant_id = $1", [tenantId]),
+      query("SELECT user_id, name, email, phone, is_verified, role, created_at FROM ts_users WHERE tenant_id = $1", [tenantId]),
       query(`
         SELECT s.*, p.name as package_name, p.monthly_price, p.setup_fee 
         FROM ts_subscriptions s 

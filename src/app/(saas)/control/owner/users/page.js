@@ -52,11 +52,11 @@ export default function OwnerUsersPage() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">User Management</h1>
+      <h1 className="text-2xl font-extrabold text-text tracking-tight mb-6">User Management</h1>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white/5 rounded-2xl border border-border overflow-hidden">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider">
+          <thead className="bg-transparent border-b border-border text-text-3 uppercase tracking-wider">
             <tr>
               <th className="px-6 py-4 font-semibold">User</th>
               <th className="px-6 py-4 font-semibold">Role</th>
@@ -64,12 +64,12 @@ export default function OwnerUsersPage() {
               <th className="px-6 py-4 font-semibold text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-border">
             {users.map(u => (
-              <tr key={u.user_id} className="hover:bg-slate-50">
+              <tr key={u.user_id} className="hover:bg-white/5">
                 <td className="px-6 py-4">
-                  <div className="font-bold text-slate-800">{u.name}</div>
-                  <div className="text-slate-500 text-xs">{u.email}</div>
+                  <div className="font-bold text-text">{u.name}</div>
+                  <div className="text-text-2 text-xs">{u.email}</div>
                 </td>
                 <td className="px-6 py-4">
                   <select 
@@ -80,7 +80,7 @@ export default function OwnerUsersPage() {
                       u.role === 'owner' ? 'bg-violet-100 text-violet-700' :
                       u.role === 'manager' ? 'bg-blue-100 text-blue-700' :
                       u.role === 'support' ? 'bg-amber-100 text-amber-700' :
-                      'bg-slate-100 text-slate-700'
+                      'bg-white/10 text-text-2'
                     }`}
                   >
                     <option value="customer">Customer</option>
@@ -89,14 +89,14 @@ export default function OwnerUsersPage() {
                     <option value="owner">Owner</option>
                   </select>
                 </td>
-                <td className="px-6 py-4 text-slate-500">
+                <td className="px-6 py-4 text-text-2">
                   {new Date(u.created_at).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 text-right">
                   <button 
                     onClick={() => deleteUser(u.user_id)}
                     disabled={updating === u.user_id}
-                    className="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-xs font-semibold disabled:opacity-50"
+                    className="px-3 py-1.5 bg-danger/10 text-danger rounded-lg hover:bg-danger/20 text-xs font-semibold disabled:opacity-50"
                   >
                     Delete
                   </button>
